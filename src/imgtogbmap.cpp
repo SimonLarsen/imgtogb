@@ -1,10 +1,18 @@
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
-#include <cstring>
+#include <string>
 #include <iomanip>
 #include "stb_image.c"
 
 #include "imgtogbmap.hpp"
+
+const char* help_text =
+"Usage: imgtogbmap [OPTIONS] IMAGE\n\n"
+"  -h            Print this help text.\n"
+"  -n NAME       Name of tile map.\n"
+"  -o FILENAME   Path to output file.\n"
+"                Output is written to STDOUT if not given.\n";
 
 /**
  * Converts RGB color to (approximation of) luminance.
@@ -110,10 +118,10 @@ bool compareTiles(int ax, int ay, int bx, int by, Image &img) {
  *
  * @return Loaded image
  */
-Image loadImage(char *filename) {
+Image loadImage(std::string &filename) {
 	Image img;
 
-	img.data = stbi_load(filename, &img.width, &img.height, &img.n, 3);
+	img.data = stbi_load(filename.c_str(), &img.width, &img.height, &img.n, 3);
 	if(img.data == NULL) {
 		std::cerr << "Error loading image " << filename << std::endl;
 	} else {
@@ -127,46 +135,94 @@ Image loadImage(char *filename) {
 	return img;
 }
 
-void emitTileMap(int *tilemap, Image &img, std::ostream &os) {
+/**
+ * Emits the generated tile map to given output stream.
+ *
+ * @param tilemap Tile map as an array of integers.
+ * @parma width Width of tile map in tiles
+ * @param height Height of tile map in tiles
+ * @param os Output stream.
+ */
+void emitTileMap(int *tilemap, std::string &name, int width, int height, std::ostream &os) {
 	// Print tile map
-	os << "unsigned char tile_map[] = {\n";
-	for(int iy = 0; iy < img.tilesy; ++iy) {
+	os << "#define " << std::setbase(10) << name << "_tiles_length " << width*height << std::endl;
+	os << std::setbase(16) << std::setfill('0');
+	os << "const unsigned char " << name << "_tiles[] = {\n";
+	for(int iy = 0; iy < height; ++iy) {
 		os << "\t";
-		for(int ix = 0; ix < img.tilesx; ++ix) {
-			os << tilemap[ix+iy*img.tilesx] << ", ";
+		for(int ix = 0; ix < width; ++ix) {
+			os << "0x" << std::setw(2) << tilemap[ix+iy*width] << ", ";
 		}
 		os << "\n";
 	}
-	os << "};" << std::endl;
+	os << "};" << std::endl << std::endl;
 }
 
-void emitTileData(unsigned char *tiledata, int tile_count, std::ostream &os) {
+/**
+ * Emits the generated tile data to given output stream.
+ * @param tiledata Tile data as an array of unsigned chars.
+ * @param n Number of tiles in data array.
+ * @param os Output stream.
+ */
+void emitTileData(unsigned char *tiledata, std::string &name, int n, std::ostream &os) {
 	// Print tile data
-	os << "unsigned char tile_data[] = {";
-	for(int i = 0; i < tile_count*16; ++i) {
+	os << "#define " << std::setbase(10) << name << "_data_length " << n << std::endl;
+	os << "const unsigned char " << name << "_data[] = {";
+	os << std::setbase(16) << std::setfill('0');
+	for(int i = 0; i < n*16; ++i) {
 		if(i % 16 == 0) os << "\n\t";
-		os << (int)tiledata[i] << ", ";
+		os << "0x" << std::setw(2) << (int)tiledata[i] << ", ";
 	}
-	os << "\n};" << std::endl;
-	std::cerr << "Produced data for " << tile_count << " tiles" << std::endl;
+	os << "\n};" << std::endl << std::endl;
 }
 
 int main(int argc, char **argv) {
-	char *filename;
+	std::string inputfile, outputfile, name;
 	int tile_count, hash;
-	bool found;
+	unsigned int pos;
+	bool found, writeToFile;
+
 	Image img;
 	Tile tile;
 	int *tilemap;
+
 	mmap map;
 	mmap::iterator it;
 	mmap_range range;
 
-	// Get filename
-	filename = argv[1];
+	// Parse arguments
+	writeToFile = false;
+	for(int i = 1; i < argc; ++i) {
+		if(!strcmp(argv[i], "-n")) {
+			name = argv[++i];
+		} else if (!strcmp(argv[i], "-h")) {
+			std::cerr << help_text;
+			return EXIT_FAILURE;
+		} else if (!strcmp(argv[i], "-o")) {
+			outputfile = argv[++i];
+			writeToFile = true;
+		} else {
+			inputfile = argv[i];
+		}
+	}
+	// Check if input file is given
+	if(inputfile.length() == 0) {
+		std::cerr << "error: Missing input file." << std::endl;
+		std::cerr << help_text;
+		return EXIT_FAILURE;
+	}
+	// Generate name from filename
+	if(name.length() == 0) {
+		pos = inputfile.find_last_of('.');
+		if(pos == std::string::npos) {
+			name = inputfile;
+		} else {
+			name = inputfile.substr(0,pos);
+		}
+	}
 
 	// Load image from file
-	img = loadImage(filename);
+	img = loadImage(inputfile);
 
 	// Create tile map
 	tilemap = new int[img.tilesx*img.tilesy];
@@ -216,16 +272,25 @@ int main(int argc, char **argv) {
 		convertTile(it->second.x*8, it->second.y*8, img, &tiledata[it->second.id*16]);
 	}
 
-	emitTileMap(tilemap, img, std::cout);
+	// Open file is output filename is given, use std::cout otherwise
+	std::ofstream osfile;
+	std::ostream &os = writeToFile
+		? osfile.open(outputfile.c_str()), osfile : std::cout;
 
-	emitTileData(tiledata, tile_count, std::cout);
+	// Emit header file
+	os << "#ifndef __" << name << "_h" << std::endl;
+	os << "#define __" << name << "_h" << std::endl << std::endl;
+	emitTileMap(tilemap, name, img.tilesx, img.tilesy, os);
+	emitTileData(tiledata, name, tile_count, os);
+	os << "#endif" << std::endl;
 
-	// Free image data
-	stbi_image_free(img.data);
+	// Close output file
+	if(writeToFile) osfile.close();
 
 	// Clean up 
+	stbi_image_free(img.data);
 	delete[] tiledata;
 	delete[] tilemap;
 
-	return 0;
+	return EXIT_SUCCESS;
 }

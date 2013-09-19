@@ -24,9 +24,9 @@ void getRGB(int x, int y, Image &img, unsigned char *out);
 unsigned int hashTile(int tilex, int tiley, Image &img);
 bool compareTiles(int ax, int ay, int bx, int by, Image &img);
 
-Image loadImage(char *filename);
+Image loadImage(std::string &filename);
 
-void emitTileMap(int *tilemap, Image &img, std::ostream &os);
-void emitTileData(unsigned char *tiledata, int tile_count, std::ostream &os);
+void emitTileMap(int *tilemap, std::string &name, int width, int height, std::ostream &os);
+void emitTileData(unsigned char *tiledata, std::string &name, int n, std::ostream &os);
 
 #endif
