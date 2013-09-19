@@ -148,7 +148,8 @@ Image loadImage(std::string &filename) {
  */
 void emitTileMap(int *tilemap, std::string &name, int width, int height, std::ostream &os) {
 	// Print tile map
-	os << "#define " << std::setbase(10) << name << "_tiles_length " << width*height << std::endl;
+	os << "#define " << name << "_tiles_width " << std::setbase(10) << width << std::endl;
+	os << "#define " << name << "_tiles_height " << std::setbase(10) << height << std::endl;
 	os << std::setbase(16) << std::setfill('0');
 	os << "const unsigned char " << name << "_tiles[] = {\n";
 	for(int iy = 0; iy < height; ++iy) {

@@ -33,7 +33,8 @@ Running `imgtogbmap test.png -o test.h` on above image (enlarged 800%) produces 
     #ifndef __test__
     #define __test__
     
-    #define test_tiles_length 4
+    #define test_tiles_width 2
+    #define test_tiles_height 2
     const unsigned char test_tiles[] = {
     	0x00, 0x01, 
     	0x00, 0x02, 
