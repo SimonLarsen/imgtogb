@@ -9,10 +9,13 @@
 
 const char* help_text =
 "Usage: imgtogbmap [OPTIONS] IMAGE\n\n"
+"Options:\n"
 "  -h            Print this help text.\n"
 "  -n NAME       Name of tile map.\n"
-"  -o FILENAME   Path to output file.\n"
-"                Output is written to STDOUT if not given.\n";
+"  -o FILENAME   Path to output file.\n\n"
+"Output is written to STDOUT if no output file is given.\n\n"
+"If no NAME is given the basename of IMAGE is used.\n"
+"(e.g. \"monster.png\" will produce \"monster_tiles\" and \"monster_data\")\n";
 
 /**
  * Converts RGB color to (approximation of) luminance.
@@ -278,8 +281,8 @@ int main(int argc, char **argv) {
 		? osfile.open(outputfile.c_str()), osfile : std::cout;
 
 	// Emit header file
-	os << "#ifndef __" << name << "_h" << std::endl;
-	os << "#define __" << name << "_h" << std::endl << std::endl;
+	os << "#ifndef __" << name << "__" << std::endl;
+	os << "#define __" << name << "__" << std::endl << std::endl;
 	emitTileMap(tilemap, name, img.tilesx, img.tilesy, os);
 	emitTileData(tiledata, name, tile_count, os);
 	os << "#endif" << std::endl;
