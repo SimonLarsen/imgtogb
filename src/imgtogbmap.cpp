@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <cstring>
+#include <cstdlib>
 #include <iomanip>
 
 #include "imgtogbmap.hpp"
@@ -11,7 +12,8 @@ const char* help_text =
 "Options:\n"
 "  -h            Print this help text.\n"
 "  -n NAME       Name of tile map.\n"
-"  -o FILENAME   Path to output file.\n\n"
+"  -o FILENAME   Path to output file.\n"
+"  -O OFFSET     Adds offset to tile map indices\n\n"
 "Output is written to STDOUT if no output file is given.\n\n"
 "If no NAME is given the basename of IMAGE is used.\n"
 "(e.g. \"monster.png\" will produce \"monster_tiles\" and \"monster_data\")\n";
@@ -24,7 +26,7 @@ const char* help_text =
  * @param height Height of tile map in tiles
  * @param os Output stream.
  */
-void emitTileMap(int *tilemap, std::string &name, int width, int height, std::ostream &os) {
+void emitTileMap(int *tilemap, std::string &name, int width, int height, int offset, std::ostream &os) {
 	// Print tile map
 	os << "#define " << name << "_tiles_width " << std::setbase(10) << width << std::endl;
 	os << "#define " << name << "_tiles_height " << std::setbase(10) << height << std::endl;
@@ -33,7 +35,7 @@ void emitTileMap(int *tilemap, std::string &name, int width, int height, std::os
 	for(int iy = 0; iy < height; ++iy) {
 		os << "\t";
 		for(int ix = 0; ix < width; ++ix) {
-			os << "0x" << std::setw(2) << tilemap[ix+iy*width] << ", ";
+			os << "0x" << std::setw(2) << tilemap[ix+iy*width]+offset << ", ";
 		}
 		os << "\n";
 	}
@@ -60,7 +62,7 @@ void emitTileData(unsigned char *tiledata, std::string &name, int n, std::ostrea
 
 int main(int argc, char **argv) {
 	std::string inputfile, outputfile, name;
-	int tile_count, hash;
+	int tile_count, hash, offset;
 	bool found, writeToFile;
 
 	Image img;
@@ -73,6 +75,7 @@ int main(int argc, char **argv) {
 
 	// Parse arguments
 	writeToFile = false;
+	offset = 0;
 	for(int i = 1; i < argc; ++i) {
 		if(!strcmp(argv[i], "-n")) {
 			name = argv[++i];
@@ -82,6 +85,8 @@ int main(int argc, char **argv) {
 		} else if (!strcmp(argv[i], "-o")) {
 			outputfile = argv[++i];
 			writeToFile = true;
+		} else if (!strcmp(argv[i], "-O")) {
+			offset = atoi(argv[++i]);
 		} else if(argv[i][0] != '-') {
 			inputfile = argv[i];
 		}
@@ -161,7 +166,7 @@ int main(int argc, char **argv) {
 	// Emit header file
 	os << "#ifndef __" << name << "_tiles__" << std::endl;
 	os << "#define __" << name << "_tiles__" << std::endl << std::endl;
-	emitTileMap(tilemap, name, img.tilesx, img.tilesy, os);
+	emitTileMap(tilemap, name, img.tilesx, img.tilesy, offset, os);
 	emitTileData(tiledata, name, tile_count, os);
 	os << "#endif" << std::endl;
 

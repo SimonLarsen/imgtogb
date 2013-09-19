@@ -23,6 +23,7 @@ and removed to save space.
       -h            Print this help text.
       -n NAME       Name of tile map.
       -o FILENAME   Path to output file.
+      -O OFFSET     Adds offset to tile map indices
 
     Output is written to STDOUT if no output file is given.
 
