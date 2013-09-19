@@ -63,6 +63,14 @@ int main(int argc, char **argv) {
 	// Load image from file
 	img.load(inputfile);
 
+	// If 8x16 mode, check if number of number of vertical tiles
+	// is divisible by 2.
+	if(sizeTall && (img.tilesy % 2 != 0)) {
+		std::cerr << "error: The number of vertical tiles is not divisible by two." << std::endl;
+		std::cerr << "You must either pad the image or use 8x8 sprite size." << std::endl;
+		return 1;
+	}
+
 	// Open file if output is given, use std::cout otherwise
 	std::ofstream osfile;
 	std::ostream &os = writeToFile
