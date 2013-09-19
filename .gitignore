@@ -1,7 +1,0 @@
-*.png
-*.txt
-.gitignore
-Makefile
-bin/*
-CMakeFiles/*
-cmake_install.cmake
