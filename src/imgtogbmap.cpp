@@ -182,7 +182,6 @@ void emitTileData(unsigned char *tiledata, std::string &name, int n, std::ostrea
 int main(int argc, char **argv) {
 	std::string inputfile, outputfile, name;
 	int tile_count, hash;
-	unsigned int pos;
 	bool found, writeToFile;
 
 	Image img;
@@ -216,12 +215,12 @@ int main(int argc, char **argv) {
 	}
 	// Generate name from filename
 	if(name.length() == 0) {
-		pos = inputfile.find_last_of('.');
-		if(pos == std::string::npos) {
-			name = inputfile;
-		} else {
-			name = inputfile.substr(0,pos);
-		}
+		unsigned int start, end;
+		start = inputfile.find_last_of('/');
+		start = (start < std::string::npos ? start+1 : 0);
+		end = inputfile.find_last_of('.');
+		end = (end < std::string::npos ? end : inputfile.length()-1);
+		name = inputfile.substr(start,end-start);
 	}
 
 	// Load image from file
