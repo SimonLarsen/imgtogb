@@ -1,7 +1,7 @@
 project(imgtogbmap)
 cmake_minimum_required(VERSION 2.8)
 
-set(CMAKE_CXX_FLAGS "-Wall -O3 -ggdb")
+set(CMAKE_CXX_FLAGS "-Wall -O3")
 set(CMAKE_SOURCE_DIR "src")
 set(CMAKE_BINARY_DIR "bin")
 
