@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 		}
 		os << "\n";
 	}
-	os << "}" << std::endl << std::endl;
+	os << "};" << std::endl << std::endl;
 
 	// End header
 	os << "#endif" << std::endl;
