@@ -64,8 +64,8 @@ Changing the sprite size with the `-s` flag changes the order the sprite tiles a
 
 Running `imgtogbmap test.png -o test.h` on the above image (enlarged 800%) produces the following file
 
-    #ifndef __test__
-    #define __test__
+    #ifndef __test_tiles__
+    #define __test_tiles__
     
     #define test_tiles_width 2
     #define test_tiles_height 2
