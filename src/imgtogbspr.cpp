@@ -1,9 +1,10 @@
-#include "imgtogbspr.hpp"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <cstring>
 #include <iomanip>
+
+#include "common.hpp"
 
 const char* help_text = 
 "Usage: imgtogbspr [OPTIONS] IMAGE\n\n"
@@ -61,7 +62,12 @@ int main(int argc, char **argv) {
 	}
 
 	// Load image from file
-	img.load(inputfile);
+	try {
+		img.load(inputfile);
+	} catch(ImageLoadException &e) {
+		std::cerr << e.what() << std::endl;
+		return 1;
+	}
 
 	// If 8x16 mode, check if number of number of vertical tiles
 	// is divisible by 2.

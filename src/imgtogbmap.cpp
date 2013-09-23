@@ -108,7 +108,12 @@ int main(int argc, char **argv) {
 	}
 
 	// Load image from file
-	img.load(inputfile);
+	try {
+		img.load(inputfile);
+	} catch(const ImageLoadException &e) {
+		std::cerr << e.what() << inputfile << std::endl;
+		return 1;
+	}
 
 	// Create tile map
 	tilemap = new int[img.tilesx*img.tilesy];
