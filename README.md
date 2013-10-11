@@ -11,39 +11,39 @@ The only output format currently supported is C headers for use with GBDK. Assem
 
 ### Usage ###
 
-USAGE: 
+    USAGE: 
 
-   ./bin/imgtogb  {--map|--sprite} [OPTIONS] <IMAGE>
+       ./bin/imgtogb  {--map|--sprite} [OPTIONS] <IMAGE>
 
 
-OPTIONS: 
-   --map
-     (OR required)  Produce tile map
+    OPTIONS: 
+       --map
+         (OR required)  Produce tile map
          -- OR --
-   --sprite
-     (OR required)  Produce sprite data
+       --sprite
+         (OR required)  Produce sprite data
 
 
-   --8x16
-     8x16 sprite mode
+       --8x16
+         8x16 sprite mode
 
-   -O <OFFSET>,  --offset <OFFSET>
-     Add offset to tile map indices
+       -O <OFFSET>,  --offset <OFFSET>
+         Add offset to tile map indices
 
-   -n <NAME>,  --name <NAME>
-     Output name
+       -n <NAME>,  --name <NAME>
+         Output name
 
-   -o <FILE>,  --out <FILE>
-     Output file
+       -o <FILE>,  --out <FILE>
+         Output file
 
-   --version
-     Displays version information and exits.
+       --version
+         Displays version information and exits.
 
-   -h,  --help
-     Displays usage information and exits.
+       -h,  --help
+         Displays usage information and exits.
 
-   <IMAGE>
-     (required)  Image to convert
+      <IMAGE>
+         (required)  Image to convert
 
 Output is written to STDOUT if no output file is given.
     
