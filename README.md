@@ -1,8 +1,7 @@
 imgtogb
 =======
 
-**imgtogb** is a set of utilities for converting images into Game Boy sprites and tiles.
-imgtogb currently consists of two tools: **igmtogbmap** and **imgtogbspr**.
+**imgtogb** is a utility for converting images into Game Boy sprites and background tiles.
 
 During conversion the image is converted into four colors based on luminance. While not required it is recommended to use a monochrome image using colors `#000000`, `#555555`, `#aaaaaa` and `#ffffff` for best results.
 
@@ -10,46 +9,45 @@ The only output format currently supported is C headers for use with GBDK. Assem
 
 [stb_image](http://nothings.org/stb_image.c) is used for image reading so some images (such as indexed PNGs and progressive JPEGs) will not work.
 
-## imgtogbmap ##
-
-**imgtogbmap** is used for generating background and window tile maps. Identical tiles will automatically be detected
-and removed to save space.
-
 ### Usage ###
 
-    Usage: imgtogbmap [OPTIONS] IMAGE
+USAGE: 
 
-    Options:
-      -h            Print this help text.
-      -n NAME       Name of tile map.
-      -o FILENAME   Path to output file.
-      -O OFFSET     Adds offset to tile map indices
+   ./bin/imgtogb  {--map|--sprite} [OPTIONS] <IMAGE>
 
-    Output is written to STDOUT if no output file is given.
 
-    If no NAME is given the basename of IMAGE is used.
-    (e.g. "monster.png" will produce "monster_tiles" and "monster_data")
+OPTIONS: 
+   --map
+     (OR required)  Produce tile map
+         -- OR --
+   --sprite
+     (OR required)  Produce sprite data
 
-## imgtogbspr ##
 
-**imgtogbspr** is used for generating sprite tile data. Both 8x8 and 8x16 sprites sizes are supported.
+   --8x16
+     8x16 sprite mode
 
-### Usage ###
+   -O <OFFSET>,  --offset <OFFSET>
+     Add offset to tile map indices
 
-    Usage: imgtogbspr [OPTIONS] IMAGE
+   -n <NAME>,  --name <NAME>
+     Output name
+
+   -o <FILE>,  --out <FILE>
+     Output file
+
+   --version
+     Displays version information and exits.
+
+   -h,  --help
+     Displays usage information and exits.
+
+   <IMAGE>
+     (required)  Image to convert
+
+Output is written to STDOUT if no output file is given.
     
-    Options:
-      -h            Print this help text.
-      -n NAME       Name of output.
-      -o FILENAME   Path to output file.
-      -s SIZE       Sprite size. 8x8 or 8x16
-    
-    Output is written to STDOUT if no output file is given.
-    
-    If no NAME is given the basename of IMAGE is used.
-    (e.g. "enemies.png" will produce "enemies_data")
-    
-Changing the sprite size with the `-s` flag changes the order the sprite tiles appear in sprite VRAM.
+Changing the sprite size with the `--size8x16` flag changes the order the sprite tiles appear in sprite VRAM.
 
     8x8 mode    8x16 mode
     +---+---+   +---+---+
@@ -57,28 +55,3 @@ Changing the sprite size with the `-s` flag changes the order the sprite tiles a
     +---+---+   +---+---+
     | 2 | 3 |   | 1 | 3 |
     +---+---+   +---+---+
-
-## Example usage ###
-
-![4x4 tiles test image](images/test128x128.png)
-
-Running `imgtogbmap test.png -o test.h` on the above image (enlarged 800%) produces the following file
-
-    #ifndef __test_tiles__
-    #define __test_tiles__
-    
-    #define test_tiles_width 2
-    #define test_tiles_height 2
-    const unsigned char test_tiles[] = {
-    	0x00, 0x01, 
-    	0x00, 0x02, 
-    };
-    
-    #define test_data_length 3
-    const unsigned char test_data[] = {
-    	0xff, 0xf0, 0xff, 0xf0, 0xff, 0xf0, 0xff, 0xf0, 0x00, 0xf0, 0x00, 0xf0, 0x00, 0xf0, 0x00, 0xf0, 
-    	0x41, 0x48, 0x82, 0x90, 0x04, 0x20, 0x08, 0x41, 0x10, 0x82, 0x20, 0x04, 0x41, 0x09, 0x82, 0x12, 
-    	0x00, 0xff, 0x7e, 0xff, 0x42, 0xc3, 0x5a, 0xc3, 0x5a, 0xc3, 0x42, 0xc3, 0x7e, 0xff, 0x00, 0xff, 
-    };
-    
-    #endif
