@@ -11,18 +11,14 @@ The only output format currently supported is C headers for use with GBDK. Assem
 
 ### Usage ###
 
-    USAGE: 
-
-       ./bin/imgtogb  {--map|--sprite} [OPTIONS] <IMAGE>
-
+    USAGE: imgtogb {--map|--sprite} [OPTIONS] <IMAGE>
 
     OPTIONS: 
        --map
-         (OR required)  Produce tile map
+         Produce tile map
          -- OR --
        --sprite
-         (OR required)  Produce sprite data
-
+         Produce sprite data
 
        --8x16
          8x16 sprite mode
