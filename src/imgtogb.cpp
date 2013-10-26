@@ -24,7 +24,7 @@ void produceSprites(const Image& image, bool size8x16, const std::string& name, 
 	os << "#define __" << name << "_sprites__" << std::endl << std::endl;
 
 	os << "#define " << name << "_data_length " << image.getTilesX()*image.getTilesY() << std::endl;
-	os << "#const unsigned char " << name << "_data[] = {" << std::endl; 
+	os << "const unsigned char " << name << "_data[] = {" << std::endl; 
 
 	ix = iy = 0;
 	while(ix < image.getTilesX() && iy < image.getTilesY()) {
@@ -56,7 +56,8 @@ void produceSprites(const Image& image, bool size8x16, const std::string& name, 
 		os << std::endl;
 	}
 
-	os << "};" << std::endl;
+	os << "};" << std::endl << std::endl;
+	os << "#endif" << std::endl;
 
 }
 
