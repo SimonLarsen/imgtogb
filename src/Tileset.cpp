@@ -7,7 +7,7 @@
  *
  * @param image Source image
  */
-void Tileset::generate(const Image& image) {
+void Tileset::generate(const Image& image, bool optimize) {
 	Tile tile;
 	int hash;
 	bool found;
@@ -27,7 +27,7 @@ void Tileset::generate(const Image& image) {
 			// Look for existing tiles with same hash
 			range = map.equal_range(hash);
 			// No matches found
-			if(range.first == range.second) {
+			if(optimize == false || range.first == range.second) {
 				tilemap[ix+iy*image.getTilesX()] = addTile(tile, hash);
 			}
 			// Else add it of not already in set
@@ -106,6 +106,7 @@ void Tileset::emitData(std::ostream& os, const std::string& name) {
 void Tileset::emitTilemap(std::ostream& os, const std::string& name, int offset) {
 	os << "#define " << name << "_tiles_width " << std::setbase(10) << image->getTilesX() << std::endl;
 	os << "#define " << name << "_tiles_height " << std::setbase(10) << image->getTilesY() << std::endl;
+	os << "#define " << name << "_offset " << std::setbase(10) << offset << std::endl;
 	os << "const unsigned char " << name << "_tiles[] = {\n";
 	for(int iy = 0; iy < image->getTilesY(); ++iy) {
 		os << "\t";

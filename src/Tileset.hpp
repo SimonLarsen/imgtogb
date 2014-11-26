@@ -18,7 +18,7 @@ public:
 		if(tilemap) delete[] tilemap;
 	}
 
-	void generate(const Image& image);
+	void generate(const Image& image, bool optimize = true);
 	int addTile(Tile& tile, int hash);
 	void emitData(std::ostream& os, const std::string& name);
 	void emitTilemap(std::ostream& os, const std::string& name, int offset);

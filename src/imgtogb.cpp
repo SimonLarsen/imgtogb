@@ -70,9 +70,9 @@ void produceSprites(const Image& image, bool size8x16, const std::string& name, 
  * @param name Name of tilemap
  * @param os Output stream to emit to 
  */
-void produceTilemap(const Image& image, int offset, const std::string& name, std::ostream& os) {
+void produceTilemap(const Image& image, int offset, const std::string& name, bool optimize, std::ostream& os) {
 	Tileset tileset;
-	tileset.generate(image);
+	tileset.generate(image, optimize);
 
 	os << "#ifndef __" << name << "_tiles__" << std::endl;
 	os << "#define __" << name << "_tiles__" << std::endl << std::endl;
@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
 	Image image;
 	std::string imageFilename, outputFilename, outputName;
 	int offset;
-	bool flagMap, size8x16;
+	bool flagMap, size8x16, optimize;
 
 	// Parse arguments
 	try {
@@ -123,6 +123,7 @@ int main(int argc, char **argv) {
 
 		// Sprite size switches
 		TCLAP::SwitchArg size8x16Switch("","8x16", "8x16 sprite mode", cmd);
+		TCLAP::SwitchArg noOptimizeSwitch("","no-optimize", "Don't optimize map tiles", cmd);
 
 		cmd.parse(argc, argv);
 
@@ -134,6 +135,7 @@ int main(int argc, char **argv) {
 		// Retrieve flags
 		flagMap = mapSwitch.getValue();
 		size8x16 = size8x16Switch.getValue();
+		optimize = !noOptimizeSwitch.getValue();
 
 	} catch (TCLAP::ArgException &e) {
 		std::cerr << "error: " << e.error() << "for arg " << e.argId() << std::endl;
@@ -159,7 +161,7 @@ int main(int argc, char **argv) {
 
 	// Produce tile map or sprite data based on flags
 	if(flagMap) {
-		produceTilemap(image, offset, outputName, os);
+		produceTilemap(image, offset, outputName, optimize, os);
 	}
 	else {
 		produceSprites(image, size8x16, outputName, os);
