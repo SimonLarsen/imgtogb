@@ -15,6 +15,7 @@ namespace imgtogb {
 
 			size_t getTilesX() const;
 			size_t getTilesY() const;
+			size_t getTileDataSize() const;
 			void getTileMap(std::vector<unsigned char> &out) const;
 			void getTileData(std::vector<unsigned char> &out) const;
 

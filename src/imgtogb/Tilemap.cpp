@@ -67,6 +67,10 @@ namespace imgtogb {
 		return tiles_y;
 	}
 
+	size_t Tilemap::getTileDataSize() const {
+		return ntiles;
+	}
+
 	void Tilemap::getTileMap(std::vector<unsigned char> &out) const {
 		out.resize(tilemap.size1() * tilemap.size2());
 		for(size_t iy = 0; iy < tilemap.size2(); ++iy) {

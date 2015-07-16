@@ -11,6 +11,7 @@
 #include <imgtogb/Image.hpp>
 #include <imgtogb/gb.hpp>
 #include <imgtogb/Tilemap.hpp>
+#include <imgtogb/rle.hpp>
 
 using namespace imgtogb;
 
@@ -56,6 +57,7 @@ void produceSpriteData(
 
 void emitSpriteCHeader(
 	const std::vector<unsigned char> &data,
+	size_t data_length,
 	const std::string &name,
 	std::ostream &os
 ) {
@@ -64,7 +66,7 @@ void emitSpriteCHeader(
 	os << "#ifndef " << name_upper << "_SPRITES_H\n";
 	os << "#define " << name_upper << "_SPRITES_H\n\n";
 
-	os << "#define " << name << "_data_length " << data.size() / 16 << std::endl;
+	os << "#define " << name << "_data_length " << data_length << std::endl;
 	os << "const unsigned char " << name << "_data[] = {";
 
 	int i = 0;
@@ -80,6 +82,7 @@ void emitSpriteCHeader(
 
 void emitMapCHeader(
 	const std::vector<unsigned char> &tilemap,
+	size_t tiledata_size,
 	size_t tiles_x,
 	size_t tiles_y,
 	int offset,
@@ -92,7 +95,7 @@ void emitMapCHeader(
 	os << "#ifndef " << name_upper << "_MAP_H\n";
 	os << "#define " << name_upper << "_MAP_H\n\n";
 
-	os << "#define " << name << "_data_length " << tiledata.size() / 16 << std::endl;
+	os << "#define " << name << "_data_length " << tiledata_size << std::endl;
 	os << "const unsigned char " << name << "_data[] = {";
 
 	int i = 0;
@@ -148,11 +151,25 @@ int main(int argc, const char *argv[]) {
 		std::vector<unsigned char> tilemap, tiledata;
 		map.getTileMap(tilemap);
 		map.getTileData(tiledata);
-		emitMapCHeader(tilemap, map.getTilesX(), map.getTilesY(), offsetArg.getValue(), tiledata, name, std::cout);
-	} else {
+		if(rleSwitch.getValue()) {
+			std::vector<unsigned char> tilemap_rle, tiledata_rle;
+			rle_encode(tilemap, tilemap_rle);
+			rle_encode(tiledata, tiledata_rle);
+			tilemap.swap(tilemap_rle);
+			tiledata.swap(tiledata_rle);
+		}
+		emitMapCHeader(tilemap, map.getTileDataSize(), map.getTilesX(), map.getTilesY(), offsetArg.getValue(), tiledata, name, std::cout);
+	}
+	else {
 		std::vector<unsigned char> data;
 		produceSpriteData(img, size8x16Switch.getValue(), data);
-		emitSpriteCHeader(data, name, std::cout);
+		size_t data_length = data.size() / 16;
+		if(rleSwitch.getValue()) {
+			std::vector<unsigned char> data_rle;
+			rle_encode(data, data_rle);
+			data.swap(data_rle);
+		}
+		emitSpriteCHeader(data, data_length, name, std::cout);
 	}
 
 	return 0;
