@@ -1,0 +1,6 @@
+[submodule "tclap"]
+	path = tclap
+	url = https://github.com/SimonLarsen/tclap.git
+[submodule "CImg"]
+	path = CImg
+	url = https://github.com/dtschump/CImg.git
