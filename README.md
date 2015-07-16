@@ -19,9 +19,23 @@ make
 
 Changing the sprite size with the `--8x16` flag changes the order the sprite tiles appear in sprite VRAM.
 
-    8x8 mode    8x16 mode
-    +---+---+   +---+---+
-    | 0 | 1 |   | 0 | 2 |
-    +---+---+   +---+---+
-    | 2 | 3 |   | 1 | 3 |
-    +---+---+   +---+---+
+```
+8x8 mode    8x16 mode
++---+---+   +---+---+
+| 0 | 1 |   | 0 | 2 |
++---+---+   +---+---+
+| 2 | 3 |   | 1 | 3 |
++---+---+   +---+---+
+```
+
+### RLE compression ###
+
+The `--rle` flag will compress the data tables using run-length encoding. A run is denoted by the value repeated twice followed by the run length, while single characters will appear unchanged.
+
+```
+Original:
+  10000023111111000
+
+Compressed:
+  100523116003
+```
