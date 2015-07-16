@@ -11,7 +11,7 @@
 namespace imgtogb {
 	class Tilemap {
 		public:
-			Tilemap(const Image &img);
+			Tilemap(const Image &img, int offset);
 
 			size_t getTilesX() const;
 			size_t getTilesY() const;
@@ -21,6 +21,7 @@ namespace imgtogb {
 
 		private:
 			const Image *img;
+			int offset;
 			size_t tiles_x, tiles_y, ntiles;
 			boost::numeric::ublas::matrix<int> tilemap;
 			std::multimap<int, Tile> map;

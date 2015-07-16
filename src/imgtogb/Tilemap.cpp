@@ -23,9 +23,11 @@ namespace imgtogb {
 	typedef std::pair<mmap::iterator,mmap::iterator> mmap_range;
 
 	Tilemap::Tilemap(
-		const Image &img
+		const Image &img,
+		int offset
 	)
 	: img(&img)
+	, offset(offset)
 	, tiles_x(img.width() / 8)
 	, tiles_y(img.height() / 8)
 	, ntiles(0)
@@ -76,7 +78,7 @@ namespace imgtogb {
 		out.resize(tilemap.size1() * tilemap.size2());
 		for(size_t iy = 0; iy < tilemap.size2(); ++iy) {
 			for(size_t ix = 0; ix < tilemap.size1(); ++ix) {
-				out[ix + iy*tilemap.size1()] = tilemap(ix, iy);
+				out[ix + iy*tilemap.size1()] = tilemap(ix, iy) + offset;
 			}
 		}
 	}

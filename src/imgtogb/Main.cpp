@@ -7,7 +7,6 @@
 #include <array>
 #include <tclap/CmdLine.h>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include <imgtogb/StdOutput.hpp>
 #include <imgtogb/Image.hpp>
 #include <imgtogb/gb.hpp>
@@ -115,12 +114,22 @@ void emitMapCHeader(
 	i = 0;
 	for(unsigned char c : tilemap) {
 		if(i % tiles_x == 0) os << "\n\t";
-		os << std::setw(3) << (int)c + offset << ", ";
+		os << std::setw(3) << (int)c << ", ";
 		i++;
 	}
 	os << "\n};\n\n";
 
 	os << "#endif" << std::endl;
+}
+
+std::string basename(const std::string &path) {
+	size_t lastSlash = path.find_last_of('/');
+	lastSlash = (lastSlash == std::string::npos ? 0 : lastSlash+1);
+	size_t lastBSlash = path.find_last_of('\\');
+	lastBSlash = (lastBSlash == std::string::npos ? 0 : lastBSlash+1);
+	size_t end = path.find_last_of('.');
+	size_t start = std::max(lastSlash, lastBSlash);
+	return path.substr(start, end-start);
 }
 
 int main(int argc, const char *argv[]) {
@@ -153,15 +162,13 @@ int main(int argc, const char *argv[]) {
 
 	std::string name;
 	if(outputArg.isSet()) {
-		boost::filesystem::path output_path(outputArg.getValue());
-		name = boost::filesystem::basename(output_path);
+		name = basename(outputArg.getValue());
 	} else {
-		boost::filesystem::path image_path(imageArg.getValue());
-		name = boost::filesystem::basename(image_path);
+		name = basename(imageArg.getValue());
 	}
 
 	if(mapSwitch.getValue()) {
-		Tilemap map(img);
+		Tilemap map(img, offsetArg.getValue());
 		std::vector<unsigned char> tilemap, tiledata;
 		map.getTileMap(tilemap);
 		map.getTileData(tiledata);

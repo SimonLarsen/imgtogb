@@ -7,5 +7,4 @@ add_executable(imgtogb
 
 target_link_libraries(imgtogb
 	pthread
-	${Boost_LIBRARIES}
 )
