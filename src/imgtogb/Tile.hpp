@@ -17,7 +17,7 @@ namespace imgtogb {
 		for(size_t iy = 0; iy < 8; ++iy) {
 			for(size_t ix = 0; ix < 8; ++ix) {
 				unsigned char r1 = img(a.x*8+ix, a.y*8+iy, 0);
-				unsigned char r2 = img(b.x*8+iy, b.y*8+iy, 0);
+				unsigned char r2 = img(b.x*8+ix, b.y*8+iy, 0);
 
 				if(r1 != r2) return false;
 			}

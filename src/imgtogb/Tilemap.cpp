@@ -46,6 +46,7 @@ namespace imgtogb {
 						if(compare(tile, it->second, img) == true) {
 							found = true;
 							tilemap(ix, iy) = it->second.id;
+							break;
 						}
 					}
 				}
