@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 #include <array>
 #include <tclap/CmdLine.h>
 #include <boost/algorithm/string.hpp>
@@ -133,7 +134,8 @@ int main(int argc, const char *argv[]) {
 	cmd.xorAdd(mapSwitch, spriteSwitch);
 	TCLAP::SwitchArg size8x16Switch("", "8x16", "Enable 8x16 sprite mode.", cmd);
 	TCLAP::SwitchArg rleSwitch("r", "rle", "Compress data using RLE.", cmd);
-	TCLAP::UnlabeledValueArg<std::string> imageArg("image", "Image file path", true, "", "IMAGE> <OUTPUT", cmd);
+	TCLAP::UnlabeledValueArg<std::string> imageArg("image", "Image file path", true, "", "IMAGE", cmd);
+	TCLAP::UnlabeledValueArg<std::string> outputArg("output", "Output file path", false, "", "OUTPUT", cmd);
 
 	cmd.parse(argc, argv);
 
@@ -143,8 +145,20 @@ int main(int argc, const char *argv[]) {
 	}
 
 	Image img(imageArg.getValue().c_str());
-	boost::filesystem::path image_path(imageArg.getValue());
-	std::string name = boost::filesystem::basename(image_path);
+
+	std::ofstream osfile;
+	std::ostream &output_stream = outputArg.isSet()
+		? osfile.open(outputArg.getValue()), osfile
+		: std::cout;
+
+	std::string name;
+	if(outputArg.isSet()) {
+		boost::filesystem::path output_path(outputArg.getValue());
+		name = boost::filesystem::basename(output_path);
+	} else {
+		boost::filesystem::path image_path(imageArg.getValue());
+		name = boost::filesystem::basename(image_path);
+	}
 
 	if(mapSwitch.getValue()) {
 		Tilemap map(img);
@@ -158,7 +172,7 @@ int main(int argc, const char *argv[]) {
 			tilemap.swap(tilemap_rle);
 			tiledata.swap(tiledata_rle);
 		}
-		emitMapCHeader(tilemap, map.getTileDataSize(), map.getTilesX(), map.getTilesY(), offsetArg.getValue(), tiledata, name, std::cout);
+		emitMapCHeader(tilemap, map.getTileDataSize(), map.getTilesX(), map.getTilesY(), offsetArg.getValue(), tiledata, name, output_stream);
 	}
 	else {
 		std::vector<unsigned char> data;
@@ -169,7 +183,7 @@ int main(int argc, const char *argv[]) {
 			rle_encode(data, data_rle);
 			data.swap(data_rle);
 		}
-		emitSpriteCHeader(data, data_length, name, std::cout);
+		emitSpriteCHeader(data, data_length, name, output_stream);
 	}
 
 	return 0;
