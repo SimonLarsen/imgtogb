@@ -15,6 +15,8 @@
 
 using namespace imgtogb;
 
+enum class Target { C, ASM };
+
 void produceSpriteData(
 	const Image &img,
 	bool size8x16,
@@ -55,6 +57,20 @@ void produceSpriteData(
 	}
 }
 
+void emitCArray(
+	const std::vector<unsigned char> &data,
+	const std::string &name,
+	std::ostream &os
+) {
+	os << "const unsigned char " << name << "[] = {";
+	for(size_t i = 0; i < data.size(); ++i) {
+		if(i % 16 == 0) os << "\n\t";
+		os << std::setw(3) << (int)data[i];
+		if(i != data.size()-1) os << ", ";
+	}
+	os << "\n};\n\n";
+}
+
 void emitSpriteCHeader(
 	const std::vector<unsigned char> &data,
 	size_t data_length,
@@ -66,17 +82,9 @@ void emitSpriteCHeader(
 	os << "#ifndef " << name_upper << "_SPRITES_H\n";
 	os << "#define " << name_upper << "_SPRITES_H\n\n";
 
-	os << "#define " << name << "_data_length " << data_length << std::endl;
-	os << "const unsigned char " << name << "_data[] = {";
+	os << "#define " << name << "_data_length " << data_length << "\n";
+	emitCArray(data, name+"_data", os);
 
-	int i = 0;
-	for(unsigned char c : data) {
-		if(i % 16 == 0) os << "\n\t";
-		os << std::setw(3) << (int)c << ", ";
-		i++;
-	}
-
-	os << "\n};\n\n";
 	os << "#endif" << std::endl;
 }
 
@@ -96,30 +104,28 @@ void emitMapCHeader(
 	os << "#define " << name_upper << "_MAP_H\n\n";
 
 	os << "#define " << name << "_data_length " << tiledata_size << std::endl;
-	os << "const unsigned char " << name << "_data[] = {";
-
-	int i = 0;
-	for(unsigned char c : tiledata) {
-		if(i % 16 == 0) os << "\n\t";
-		os << std::setw(3) << (int)c << ", ";
-		i++;
-	}
-	os << "\n};\n\n";
+	emitCArray(tiledata, name+"_data", os);
 
 	os << "#define " << name << "_tiles_width " << tiles_x << "\n";
 	os << "#define " << name << "_tiles_height " << tiles_y << "\n";
 	os << "#define " << name << "_offset " << offset << "\n";
-	os << "const unsigned char " << name << "_tiles[] = {";
-
-	i = 0;
-	for(unsigned char c : tilemap) {
-		if(i % tiles_x == 0) os << "\n\t";
-		os << std::setw(3) << (int)c << ", ";
-		i++;
-	}
-	os << "\n};\n\n";
+	emitCArray(tilemap, name+"_tiles", os);
 
 	os << "#endif" << std::endl;
+}
+
+void emitASMArray(
+	const std::vector<unsigned char> &data,
+	const std::string &name,
+	std::ostream &os
+) {
+	os << name << ":";
+	for(size_t i = 0; i < data.size(); ++i) {
+		if(i % 16 == 0) os << "\n\tDB ";
+		os << "$" << std::setfill('0') << std::setw(2) << std::hex << std::uppercase << (int)data[i];
+		if(i != data.size()-1) os << ", ";
+	}
+	os << std::endl;
 }
 
 std::string basename(const std::string &path) {
@@ -144,7 +150,7 @@ int main(int argc, const char *argv[]) {
 	TCLAP::SwitchArg size8x16Switch("", "8x16", "Enable 8x16 sprite mode.", cmd);
 	TCLAP::SwitchArg rleSwitch("r", "rle", "Compress data using RLE.", cmd);
 	TCLAP::UnlabeledValueArg<std::string> imageArg("image", "Image file path", true, "", "IMAGE", cmd);
-	TCLAP::UnlabeledValueArg<std::string> outputArg("output", "Output file path", false, "", "OUTPUT", cmd);
+	TCLAP::UnlabeledValueArg<std::string> outputArg("output", "Output file path", true, "", "OUTPUT", cmd);
 
 	cmd.parse(argc, argv);
 
@@ -155,11 +161,13 @@ int main(int argc, const char *argv[]) {
 
 	Image img(imageArg.getValue().c_str());
 
+	// Get output stream
 	std::ofstream osfile;
 	std::ostream &output_stream = outputArg.isSet()
 		? osfile.open(outputArg.getValue()), osfile
 		: std::cout;
 
+	// Get basename
 	std::string name;
 	if(outputArg.isSet()) {
 		name = basename(outputArg.getValue());
@@ -167,6 +175,27 @@ int main(int argc, const char *argv[]) {
 		name = basename(imageArg.getValue());
 	}
 
+	Target target;
+	if(boost::algorithm::iends_with(outputArg.getValue(), ".h")
+	|| boost::algorithm::iends_with(outputArg.getValue(), ".c")) {
+		target = Target::C;
+	}
+	else if(boost::algorithm::iends_with(outputArg.getValue(), ".asm")
+	|| boost::algorithm::iends_with(outputArg.getValue(), ".s")
+	|| boost::algorithm::iends_with(outputArg.getValue(), ".gbz80")
+	|| boost::algorithm::iends_with(outputArg.getValue(), ".z80")
+	|| boost::algorithm::iends_with(outputArg.getValue(), ".inc")) {
+		target = Target::ASM;
+	}
+	else {
+		std::cerr << "error: Unknown file ending for output file" << std::endl;
+		std::cerr << "Known types:" << std::endl;
+		std::cerr << "\tC: .c, .asm " << std::endl;
+		std::cerr << "\tRGBDS: .asm, .s, .gbz80, .z80, .inc" << std::endl;
+		return 1;
+	}
+
+	// Output tile map
 	if(mapSwitch.getValue()) {
 		Tilemap map(img, offsetArg.getValue());
 		std::vector<unsigned char> tilemap, tiledata;
@@ -179,8 +208,14 @@ int main(int argc, const char *argv[]) {
 			tilemap.swap(tilemap_rle);
 			tiledata.swap(tiledata_rle);
 		}
-		emitMapCHeader(tilemap, map.getTileDataSize(), map.getTilesX(), map.getTilesY(), offsetArg.getValue(), tiledata, name, output_stream);
+		if(target == Target::C) {
+			emitMapCHeader(tilemap, map.getTileDataSize(), map.getTilesX(), map.getTilesY(), offsetArg.getValue(), tiledata, name, output_stream);
+		} else if(target == Target::ASM) {
+			emitASMArray(tiledata, name+"_data", output_stream);
+			emitASMArray(tilemap, name+"_tiles", output_stream);
+		}
 	}
+	// Output sprite data
 	else {
 		std::vector<unsigned char> data;
 		produceSpriteData(img, size8x16Switch.getValue(), data);
@@ -190,7 +225,11 @@ int main(int argc, const char *argv[]) {
 			rle_encode(data, data_rle);
 			data.swap(data_rle);
 		}
-		emitSpriteCHeader(data, data_length, name, output_stream);
+		if(target == Target::C) {
+			emitSpriteCHeader(data, data_length, name, output_stream);
+		} else if(target == Target::ASM) {
+			emitASMArray(data, name+"_data", output_stream);
+		}
 	}
 
 	return 0;
