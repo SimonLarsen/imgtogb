@@ -161,12 +161,6 @@ int main(int argc, const char *argv[]) {
 
 	Image img(imageArg.getValue().c_str());
 
-	// Get output stream
-	std::ofstream osfile;
-	std::ostream &output_stream = outputArg.isSet()
-		? osfile.open(outputArg.getValue()), osfile
-		: std::cout;
-
 	// Get basename
 	std::string name;
 	if(outputArg.isSet()) {
@@ -175,6 +169,7 @@ int main(int argc, const char *argv[]) {
 		name = basename(imageArg.getValue());
 	}
 
+	// Determine output file ending
 	Target target;
 	if(boost::algorithm::iends_with(outputArg.getValue(), ".h")
 	|| boost::algorithm::iends_with(outputArg.getValue(), ".c")) {
@@ -194,6 +189,12 @@ int main(int argc, const char *argv[]) {
 		std::cerr << "\tRGBDS: .asm, .s, .gbz80, .z80, .inc" << std::endl;
 		return 1;
 	}
+
+	// Get output stream
+	std::ofstream osfile;
+	std::ostream &output_stream = outputArg.isSet()
+		? osfile.open(outputArg.getValue()), osfile
+		: std::cout;
 
 	// Output tile map
 	if(mapSwitch.getValue()) {
