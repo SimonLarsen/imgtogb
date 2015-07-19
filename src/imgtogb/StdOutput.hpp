@@ -1,5 +1,5 @@
-#ifndef NETALIGN_STDOUTPUT_HPP
-#define NETALIGN_STDOUTPUT_HPP
+#ifndef IMGTOGB_STDOUTPUT_HPP
+#define IMGTOGB_STDOUTPUT_HPP
 
 #include <string>
 #include <vector>
@@ -101,9 +101,18 @@ namespace imgtogb {
 		// first the xor 
 		for(int i = 0; static_cast<unsigned int>(i) < xorList.size(); i++) {
 			for(TCLAP::ArgVectorIterator it = xorList[i].begin(); it != xorList[i].end(); it++) {
-				spacePrint(os, (*it)->longID(), 80, 2, 3);
-				spacePrint(os, (*it)->getDescription(), 80, 5, 0);
-				os << std::endl;
+				std::string s = (*it)->longID();
+				int spacing = std::max(35 - (int)s.length(), 2);
+
+				s += std::string(spacing, ' ');
+				s += (*it)->getDescription();
+				
+				spacePrint(os, s, 80, 2, 35);
+
+				if(it+1 != xorList[i].end()) {
+					spacePrint(os, "-- OR --", 80, 9, 0);
+				}
+				os << std::endl << std::endl;
 			}
 		}
 
@@ -111,8 +120,14 @@ namespace imgtogb {
 		for(TCLAP::ArgListIterator it = argList.begin(); it != argList.end(); it++) {
 			if(!xorHandler.contains((*it))
 			&& (*it)->getFlag() != "") {
-				spacePrint(os, (*it)->longID(), 80, 2, 3); 
-				spacePrint(os, (*it)->getDescription(), 80, 5, 0); 
+				std::string s = (*it)->longID();
+				int spacing = std::max(35 - (int)s.length(), 2);
+
+				s += std::string(spacing, ' ');
+				s += (*it)->getDescription();
+
+				spacePrint(os, s, 80, 2, 35);
+
 				os << std::endl;
 			}
 		}
