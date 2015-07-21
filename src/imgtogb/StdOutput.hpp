@@ -109,10 +109,11 @@ namespace imgtogb {
 				
 				spacePrint(os, s, 80, 2, 35);
 
+				os << std::endl;
 				if(it+1 != xorList[i].end()) {
 					spacePrint(os, "-- OR --", 80, 9, 0);
 				}
-				os << std::endl << std::endl;
+				os << std::endl;
 			}
 		}
 
