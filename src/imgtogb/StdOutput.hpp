@@ -34,8 +34,7 @@ namespace imgtogb {
 	};
 
 	inline void StdOutput::version(TCLAP::CmdLineInterface& _cmd) {
-		std::string xversion = _cmd.getVersion();
-		std::cout << basename << " " << xversion << std::endl << std::endl;
+		std::cout << basename << " " << _cmd.getVersion() << std::endl << std::endl;
 		std::cout << "Written by " << author << std::endl;
 	}
 
@@ -57,7 +56,7 @@ namespace imgtogb {
 			std::cerr << "Usage: ";
 			shortUsage(_cmd, std::cerr);	
 			std::cerr << std::endl << "For complete USAGE and HELP type: " 
-					  << std::endl << "   " << basename << " --help" 
+					  << std::endl << "   " << _cmd.getProgramName() << " --help" 
 					  << std::endl << std::endl;
 		} else {
 			usage(_cmd);
