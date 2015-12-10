@@ -119,7 +119,7 @@ namespace imgtogb {
 		// then the rest
 		for(TCLAP::ArgListIterator it = argList.begin(); it != argList.end(); it++) {
 			if(!xorHandler.contains((*it))
-			&& (*it)->getFlag() != "") {
+			&& ((*it)->getFlag() != "" || (*it)->getName() != "")) {
 				std::string s = (*it)->longID();
 				int spacing = std::max(35 - (int)s.length(), 2);
 
